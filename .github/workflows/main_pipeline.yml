@@ -41,11 +41,10 @@ jobs:
         
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
-        # For public repos you usually don't need a token;
-        # If you do, uncomment and set your secret:
+        # For public repos, a token is not required. If needed, uncomment and set your secret:
         # with:
         #   token: ${{ secrets.CODECOV_TOKEN }}
-  
+
   #######################
   # 2) Security Scanning #
   #######################
@@ -63,21 +62,22 @@ jobs:
           languages: 'python,javascript-typescript'
           # If you have custom queries, specify them here or in a config file
           # queries: security-extended,security-and-quality
-    
-      # Optional build step if required by CodeQL
-      # For Python, you might need to install dependencies or run a build step
-      # For JavaScript/TypeScript, you typically do not need additional steps
+
+      # Install dependencies required for CodeQL analysis
       - name: Install dependencies for CodeQL
         run: npm ci  # Adjust if you need to install Python dependencies
-        
+        # Example for Python:
+        # run: |
+        #   pip install -r requirements.txt
+
       # Perform CodeQL Analysis
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
         with:
           category: "/language:${{ matrix.language }}"
-    
+
       # Run Snyk after CodeQL
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/node@v2
+        uses: snyk/actions/node@v1
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
