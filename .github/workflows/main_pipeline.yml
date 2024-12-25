@@ -7,7 +7,6 @@ on:
   pull_request:
     branches: [ main, develop ]
 
-# Set permissions so CodeQL can upload results to the Security tab
 permissions:
   contents: read
   security-events: write
@@ -17,65 +16,67 @@ jobs:
   # 1) Quality Checks  #
   ######################
   quality-checks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
-
+      
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '18.x'
           cache: 'npm'
-
+          
       - name: Install dependencies
         run: npm ci
-
+        
       - name: Run ESLint
         run: npm run lint
-
+        
       - name: Check types
         run: npm run type-check
-
+        
       - name: Run tests
         run: npm run test -- --coverage
-
+        
       - name: Upload coverage reports
         uses: codecov/codecov-action@v3
         # For public repos you usually don't need a token;
         # If you do, uncomment and set your secret:
         # with:
         #   token: ${{ secrets.CODECOV_TOKEN }}
-
+  
   #######################
   # 2) Security Scanning #
   #######################
   security-scan:
     name: Security Scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      # CodeQL requires init + analyze steps for a full scan
+      # Initialize CodeQL
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
+        uses: github/codeql-action/init@v3
         with:
-          # Analyze both Python (.py) and JS/TS (.ts, .tsx)
           languages: 'python,javascript-typescript'
-          # If you have a custom build, set build-mode: 'manual'
-          # and add your build commands below before analyze
-
-      # OPTIONAL: If your JS/TS or Python project needs a build step,
-      # run it here (e.g., npm ci, python setup.py, etc.)
-      - name: Build (if needed)
-        run: npm ci
-        # Or run any Python build commands if applicable
-
+          # If you have custom queries, specify them here or in a config file
+          # queries: security-extended,security-and-quality
+    
+      # Optional build step if required by CodeQL
+      # For Python, you might need to install dependencies or run a build step
+      # For JavaScript/TypeScript, you typically do not need additional steps
+      - name: Install dependencies for CodeQL
+        run: npm ci  # Adjust if you need to install Python dependencies
+        
+      # Perform CodeQL Analysis
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-
-      # Snyk scan after CodeQL so both can run in the same job
+        uses: github/codeql-action/analyze@v3
+        with:
+          category: "/language:${{ matrix.language }}"
+    
+      # Run Snyk after CodeQL
       - name: Run Snyk to check for vulnerabilities
         uses: snyk/actions/node@v2
         env:
