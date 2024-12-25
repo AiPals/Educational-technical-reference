@@ -86,3 +86,25 @@ files = [
     "tests/utils/plotting.test.ts",
     "tests/utils/audio.test.ts",
 ]
+
+# Create the directories
+for folder in folders:
+    os.makedirs(folder, exist_ok=True)
+
+# Create the files
+for file in files:
+    with open(file, 'w') as f:
+        pass  # Create empty file
+
+# Initialize Git repository if not already done
+if not os.path.exists('.git'):
+    subprocess.run(['git', 'init'])
+
+# Add all files to Git
+subprocess.run(['git', 'add', '.'])
+
+# Commit the changes
+subprocess.run(['git', 'commit', '-m', 'Initial commit with folder structure'])
+
+# Push the changes to the remote repository
+subprocess.run(['git', 'push', '-u', 'origin', 'main'])
